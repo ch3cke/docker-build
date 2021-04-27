@@ -1,46 +1,60 @@
-const form = document.getElementById("form");
-const search = document.getElementById("search");
-const alerts = document.getElementById('alerts');
+const emojis = document.getElementById('emojis');
 
-const flash = (message, level) => {
-    alerts.innerHTML += `
-        <div class="alert alert-${level}" role="alert">
-            <p id="closeAlert" class="close" data-dismiss="alert" aria-label="Close"></p>
-            <strong>${message}</strong>
-        </div>
-    `;
+const addEmoji = emoji => {
+	const template = `
+		<div class="col card card-nginx" onclick="vote(${ emoji.id })">
+			<p class="card-title">${ emoji.name }</p>
+			<div class="card-data">
+				<div class="card-sub">
+					<p class="data">${ emoji.emoji }</p>
+				</div>
+				<div class="card-sub">
+					<p class="counts">${ emoji.count } votes</p>
+				</div>
+			</div>
+		</div>
+	`;
+
+	emojis.insertAdjacentHTML('beforeend', template);
 };
 
-if (form) {
-    form.addEventListener("submit", e => {
-        e.preventDefault();
+const getEmojis = () => {
+	fetch('/api/list', {
+        method: 'POST',
+        body: JSON.stringify({
+            order: 'count DESC'
+        }),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+	.then(res => res.json())
+	.then(data => {
+		emojis.innerHTML = '';
+		data.forEach(emoji => {
+			addEmoji(emoji);
+		});
+	})
+};
 
-        fetch("/api/submit", {
-            method: "POST",
-            body: JSON.stringify({
-                url: url.value
-            }),
-            headers: {
-                "Content-Type": "application/json"
-            }
-        })
-        .then(resp => resp.json())
-        .then(data => {
-            if (data.success) {
-                flash(data.message, "success");
-                
-                setTimeout(() => {
-                    document.getElementById("closeAlert").click();
-                }, 2800);
-                
-            } else {
-
-                flash(data.message, "danger");
-                    
-                setTimeout(() => {
-                    document.getElementById("closeAlert").click();
-                }, 2800);
-            }
-        })
+const vote = (id) => {
+    fetch('/api/vote', {
+        method: 'POST',
+        body: JSON.stringify({
+            id: id
+        }),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(res => {
+        if (res.ok) {
+            update();
+        }
     })
 }
+
+const update = () => getEmojis();
+
+update();
+setInterval(update, 5000);

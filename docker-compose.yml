@@ -1,7 +1,6 @@
 version: '3'
-services:
-
-  web:
-    build: .
-    ports:
-     - "1337:1337"
+services: 
+    emoji_voting:
+        build: .
+        ports: 
+            - "1337:1337"
