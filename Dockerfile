@@ -1,7 +1,7 @@
 FROM node:alpine
 
 # Install packages
-RUN apk add --update --no-cache supervisor g++ make python
+RUN apk add --update --no-cache supervisor g++ make 
 
 # Setup app
 RUN mkdir -p /app
