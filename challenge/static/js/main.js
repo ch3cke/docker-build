@@ -1,60 +1,21 @@
-const emojis = document.getElementById('emojis');
+const login    = document.getElementById('login');
+const response = document.getElementById('response');
 
-const addEmoji = emoji => {
-	const template = `
-		<div class="col card card-nginx" onclick="vote(${ emoji.id })">
-			<p class="card-title">${ emoji.name }</p>
-			<div class="card-data">
-				<div class="card-sub">
-					<p class="data">${ emoji.emoji }</p>
-				</div>
-				<div class="card-sub">
-					<p class="counts">${ emoji.count } votes</p>
-				</div>
-			</div>
-		</div>
-	`;
+login.addEventListener('submit', e => {
 
-	emojis.insertAdjacentHTML('beforeend', template);
-};
+	e.preventDefault();
 
-const getEmojis = () => {
-	fetch('/api/list', {
-        method: 'POST',
-        body: JSON.stringify({
-            order: 'count DESC'
-        }),
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    })
-	.then(res => res.json())
-	.then(data => {
-		emojis.innerHTML = '';
-		data.forEach(emoji => {
-			addEmoji(emoji);
-		});
+	fetch('/api/login', {
+		method: 'POST',
+		body: new URLSearchParams(new FormData(e.target))
 	})
-};
-
-const vote = (id) => {
-    fetch('/api/vote', {
-        method: 'POST',
-        body: JSON.stringify({
-            id: id
-        }),
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(res => {
-        if (res.ok) {
-            update();
-        }
-    })
-}
-
-const update = () => getEmojis();
-
-update();
-setInterval(update, 5000);
+        .then(resp => resp.json())
+        .then(data => {
+            if (data.logged) {
+                login.remove();
+                response.innerHTML = data.message;
+            } else {
+                response.innerHTML = data.message;
+            }
+	});
+});

@@ -1,52 +1,29 @@
-const path      = require('path');
-const express   = require('express');
-const router    = express.Router();
-
-let db;
-
-const response = data => ({ message: data });
+const express = require('express');
+const router  = express.Router();
+const User    = require('../models/User');
 
 router.get('/', (req, res) => {
-	return res.sendFile(path.resolve('views/index.html'));
+	return res.render('index');
 });
 
-router.post('/api/vote', (req, res) => {
-	let { id } = req.body;
+router.post('/api/login', (req, res) => {
+	let { username, password } = req.body;
 
-	if (id) {
-		return db.vote(id)
-			.then(() => {
-				return res.send(response('Successfully voted')) ;
-			})
-			.catch((e) => {
-				return res.send(response('Something went wrong'));
-			})
-	}
-
-	return res.send(response('Missing parameters'));
-})
-
-router.post('/api/list', (req, res) => {
-	let { order } = req.body;
-
-	if (order) {
-		return db.getEmojis(order)
-			.then(data => {
-				if (data) {
-					return res.json(data);
+	if (username && password) {
+		return User.find({ 
+			username,
+			password
+		})
+			.then((user) => {
+				if (user.length == 1) {
+					return res.json({logged: 1, message: `Login Successful, welcome back ${user[0].username}.` });
+				} else {
+					return res.json({logged: 0, message: 'Login Failed'});
 				}
-
-				return res.send(response('Seems like there are no emojis'));
 			})
-			.catch((e) => {
-				return res.send(response('Something went wrong'));
-			})
+			.catch(() => res.json({ message: 'Something went wrong'}));
 	}
+	return res.json({ message: 'Invalid username or password'});
+});
 
-	return res.send(response('Missing parameters'))
-});	
-
-module.exports = database => { 
-	db = database;
-	return router;
-};
+module.exports = router;
