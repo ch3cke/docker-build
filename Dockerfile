@@ -19,14 +19,4 @@ COPY flag /
 # Expose the port nginx is listening on
 EXPOSE 80
 
-<<<<<<< HEAD
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
-=======
-# Copy entrypoint
-COPY entrypoint.sh /entrypoint.sh
-#
-RUN ["chmod", "+x", "/entrypoint.sh"]
-# Start the node-js application
-ENTRYPOINT [ "/entrypoint.sh" ]
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
->>>>>>> fe81b6a12ffd89ac99bf7aa70739ba49ce71116b
