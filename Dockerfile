@@ -1,27 +1,22 @@
-FROM node:12.13.0-alpine
+FROM alpine:latest
 
-# Install packages
-RUN apk --no-cache add supervisor
+RUN adduser -D -u 1000 -g 1000 -s /bin/sh www
 
-# Setup app
-RUN mkdir -p /app
+# Install system packeges
+RUN apk add --no-cache php php-fpm nginx supervisor
 
-# Add application
-WORKDIR /app
-COPY --chown=nobody challenge .
+#RUN ln -s /usr/bin/php7 /usr/bin/php
 
-# Setup supervisor
+# Configure php-fpm and nginx
+COPY config/fpm.conf /etc/php7/php-fpm.conf
 COPY config/supervisord.conf /etc/supervisord.conf
+COPY config/nginx.conf /etc/nginx/nginx.conf
 
-RUN yarn
+# Copy challenge files
+COPY challenge /www
+COPY flag /
 
-# Expose the port node-js is reachable on
-EXPOSE 1337
+# Expose the port nginx is listening on
+EXPOSE 80
 
-# Copy entrypoint
-COPY entrypoint.sh /entrypoint.sh
-#
-RUN ["chmod", "+x", "/entrypoint.sh"]
-# Start the node-js application
-ENTRYPOINT [ "/entrypoint.sh" ]
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
