@@ -1,33 +1,26 @@
-FROM debian:buster-slim
+FROM node:12.13.0-alpine
 
-# Setup user
-RUN useradd www
+# Install packages
+RUN apk --no-cache add supervisor
 
-# Install system packeges
-RUN apt-get update && apt-get install -y supervisor nginx lsb-release curl wget
+# Setup app
+RUN mkdir -p /app
 
-# Add repos
-RUN wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
-RUN echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" | tee /etc/apt/sources.list.d/php.list
+# Add application
+WORKDIR /app
+COPY --chown=nobody challenge .
 
-# Install PHP dependencies
-RUN apt update && apt install -y php7.4-fpm
-
-# Configure php-fpm and nginx
-COPY config/fpm.conf /etc/php/7.4/fpm/php-fpm.conf
+# Setup supervisor
 COPY config/supervisord.conf /etc/supervisord.conf
-COPY config/nginx.conf /etc/nginx/nginx.conf
 
-# Copy challenge files
-COPY challenge /www
+RUN yarn
 
-# Copy flag
-COPY flag /
+# Expose the port node-js is reachable on
+EXPOSE 1337
 
-# Setup permissions
-RUN chown -R www:www /www /var/lib/nginx
+# Copy entrypoint
+COPY entrypoint.sh /entrypoint.sh
 
-# Expose the port nginx is listening on
-EXPOSE 80
-
+# Start the node-js application
+ENTRYPOINT [ "/entrypoint.sh" ]
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
