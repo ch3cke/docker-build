@@ -1,21 +1,31 @@
-const login    = document.getElementById('login');
-const response = document.getElementById('response');
+var input = document.getElementById('command');
+var output = document.getElementById("console-output");
 
-login.addEventListener('submit', e => {
+document.getElementById("command").addEventListener('keydown', (e) => {
+  if (e.keyCode === 13) {
 
-	e.preventDefault();
+    let host = input.value;
 
-	fetch('/api/login', {
-		method: 'POST',
-		body: new URLSearchParams(new FormData(e.target))
-	})
-        .then(resp => resp.json())
-        .then(data => {
-            if (data.logged) {
-                login.remove();
-                response.innerHTML = data.message;
-            } else {
-                response.innerHTML = data.message;
-            }
-	});
+    try {
+      new URL(host);
+    } catch {
+      return output.innerHTML = "Illegal Characters Detected";
+    }
+
+    output.innerHTML = '';
+
+    fetch('/api/curl', {
+      method: 'POST',
+      body: `ip=${host}`,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    })
+    .then(resp => resp.json())
+    .then(data => {
+      output.innerHTML = data.message;
+    });
+
+    input.value = '';
+  }
 });

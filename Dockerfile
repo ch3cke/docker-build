@@ -1,27 +1,33 @@
-FROM node:alpine
+FROM debian:buster-slim
 
-# Install packages
-RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.6/main' >> /etc/apk/repositories
-RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.6/community' >> /etc/apk/repositories
-RUN apk add --update --no-cache supervisor mongodb
+# Setup user
+RUN useradd www
 
-# Setup app
-RUN mkdir -p /app
+# Install system packeges
+RUN apt-get update && apt-get install -y supervisor nginx lsb-release curl wget
 
-# Add application
-WORKDIR /app
-COPY challenge .
+# Add repos
+RUN wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
+RUN echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" | tee /etc/apt/sources.list.d/php.list
 
-# Install dependencies
-RUN yarn
+# Install PHP dependencies
+RUN apt update && apt install -y php7.4-fpm
 
-# Setup superivsord
+# Configure php-fpm and nginx
+COPY config/fpm.conf /etc/php/7.4/fpm/php-fpm.conf
 COPY config/supervisord.conf /etc/supervisord.conf
+COPY config/nginx.conf /etc/nginx/nginx.conf
 
-# Expose the port node-js is reachable on
+# Copy challenge files
+COPY challenge /www
+
+# Copy flag
+COPY flag /
+
+# Setup permissions
+RUN chown -R www:www /www /var/lib/nginx
+
+# Expose the port nginx is listening on
 EXPOSE 80
 
-COPY entrypoint.sh /entrypoint.sh
-
-# Start the node-js application
-ENTRYPOINT ["sh", "/entrypoint.sh"]
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]

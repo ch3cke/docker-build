@@ -1,6 +1,0 @@
-version: '3'
-services: 
-    web:
-        image: ch3cke/wild_goose_hunt
-        ports: 
-            - "1337:80"
