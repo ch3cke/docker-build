@@ -20,7 +20,8 @@ EXPOSE 1337
 
 # Copy entrypoint
 COPY entrypoint.sh /entrypoint.sh
-
+#
+RUN ["chmod", "+x", "/home/entrypoint.sh"]
 # Start the node-js application
 ENTRYPOINT [ "/entrypoint.sh" ]
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
