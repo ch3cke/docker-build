@@ -24,4 +24,4 @@ EXPOSE 80
 COPY entrypoint.sh /entrypoint.sh
 
 # Start the node-js application
-ENTRYPOINT ["sh", "./entrypoint.sh"]
+ENTRYPOINT ["sh", "/entrypoint.sh"]
